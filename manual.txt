@@ -1,0 +1,27 @@
+NAME
+	LR (Linear Regression)
+	Version 1.0.0
+SYNOPSIS
+	./LR.out [args]
+DESCRIPTION
+	Linear regression demo made with C standard libs. 
+OPTIONS
+	-V	Verbose mode, prints values of vars every iteration. 
+	-t	Thread mode, enable muti-thread. Might increase calculation speed if batch_size is large. 
+	-s [seed]	Define seed, use the seed to generate random, can duplicate run. If not enabled, the program will seed using time (timestamp * nsec). 
+	-f [filename]	Write info per iteration to a file, in CSV format. Creates one if file doesn't exist, ask if overwrite if it does. 
+	-A [functionnum]	Define which activation function to use, 0 is default. 
+		functionnum:
+			0: None
+			1: ReLU
+			2: LeakyReLU
+			3: Sigmoid
+			4: Tanh
+	-b [batchsize]	Define how large is one batch (batch_size), 256 is default. 
+	-e [eta]	Define eta (learning rate), 0.001 is default. 
+	-l [expectedloss]	Define expected loss, the training ends when loss < expectedloss, 0.0001 is default. 
+	-v	Print version info. 
+	-h	Help (manual) page, prints this manual.  
+AUTHOR
+	SuXYIO (https://github.com/SuXYIO)
+
