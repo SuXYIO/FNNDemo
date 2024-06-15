@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 '''
-MutiLinearRegressionPlot
-Simple example of using two output CSV files of LR to plot one graph.
+MutiPlot
+Simple example of using two output CSV files to plot one graph.
 
 Usage
     python3 mutiplot.py [filepath0] [filepath1] ...
     or
     ./mutiplot.py [filepath0] [filepath1] ...
-        "filepath" is the path to the CSV formatted file LR generated. 
+        "filepath" is the path to the CSV formatted file. 
 '''
 import sys
 import matplotlib.pyplot as plt

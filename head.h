@@ -9,8 +9,9 @@
 	//Version stuff
 		#define VER "1.0.0"
 	//Network size
+		#define DEPTH 2
 		#define LEN_I 2
-		#define LEN_H 3
+		#define LEN_H0 3
 		#define LEN_O 1
 	//Max number of threads to run
 		#define MAX_THREADS 1024
@@ -24,10 +25,21 @@
 		#define COLOR_ERROR "\033[31m"
 		#define COLOR_END "\033[0m"
 //typedefs
-typedef struct {
-	double w;
-	double b;
-} neuron;
+	//weights & biases
+		typedef struct {
+			double ih0[LEN_I][LEN_H0];
+			double h0o[LEN_H0][LEN_O];
+		} W;
+		typedef struct {
+			double h0[LEN_H0];
+			double o[LEN_O];
+		} B;
+	//values
+		typedef struct {
+			double i[LEN_I];
+			double h0[LEN_H0];
+			double o[LEN_O];
+		} V;
 //functions
 	//neuron.c
 		double f(double x);
@@ -53,6 +65,7 @@ typedef struct {
 		int strand(void);
 		double rand_nml(double mean, double stddev);
 	//func.c
+		int init_wbv(void);
 		void* calc_batch(void* args);
 		int isusablefile(char* filename);
 		int printversion(void);

@@ -1,6 +1,7 @@
 # LR
 ## Note
 **The versions with this note is not completed yet, still in development.**  
+Adopted from SuXYIO/LR.  
 
 ## Intro
 Simple demo to MLP using C.  
@@ -23,12 +24,12 @@ Might work if using methods like MinGW to use POSIX standards on Windows.
 
 ## Usage
 ```bash
-./MLPDemo.out [options]
+./MLP.out [options]
 ```
 ### Args
 See manual:
 ```bash
-./MLPDemo.out -h
+./MLP.out -h
 ```
 ### Other
 None, yet.  

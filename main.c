@@ -8,12 +8,13 @@
 #include <stdbool.h>
 
 //network
-neuron wb_i[LEN_I];
-neuron wb_h[LEN_H];
-neuron wb_o[LEN_O];
+W w;
+B b;
+V v;
 //extern options
 int a_func_num = 0;
 
+//TODO: integrate the whole system with mutilayer
 int main(int const argc, char* const argv[])
 {
 	//init
@@ -80,13 +81,7 @@ int main(int const argc, char* const argv[])
 		}
 	}
 	//init weights and biases with nml distro
-	nf.w = rand_nml(0.0, 1.0);
-	nf.b = rand_nml(0.0, 1.0);
-	ng.w = rand_nml(0.0, 1.0);
-	ng.b = rand_nml(0.0, 1.0);
-	//record initial f_w & f_b for future use
-	double nf_w_init = nf.w;
-	double nf_b_init = nf.b;
+	init_wbv();
 	//init thread_size
 	//prevent too many threads
 	if (use_thread == true) {
@@ -122,6 +117,7 @@ int main(int const argc, char* const argv[])
 			printf("%sERROR: error opening file. \n%sFile: %s, from option '-f'\n%s", COLOR_ERROR, COLOR_END, csvfilename, COLOR_END);
 			return -1;
 		}
+		//TODO: change whole write to file system. 
 		fprintf(csvfilep, "f_w,f_b,g_w,g_b,l,grad_w,grad_b\n");
 	}
 	//count iteration
@@ -162,6 +158,7 @@ int main(int const argc, char* const argv[])
 		nf.w -= eta * grad_w;
 		nf.b -= eta * grad_b;
 		//print results
+		//TODO: change whole write to file system. 
 		if (writetofile == true)
 			fprintf(csvfilep, "%.*f,%.*f,%.*f,%.*f,%.*f,%.*f,%.*f\n", FPP, nf.w, FPP, nf.b, FPP, ng.w, FPP, ng.b, FPP, l, FPP, grad_w, FPP, grad_b);
 		if (verbose == true)

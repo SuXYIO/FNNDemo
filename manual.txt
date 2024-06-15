@@ -1,10 +1,10 @@
 NAME
-	LR (Linear Regression)
+	MLPDemo (Muti-Layer Perceptron Demo)
 	Version 1.0.0
 SYNOPSIS
-	./LR.out [args]
+	./MLP.out [args]
 DESCRIPTION
-	Linear regression demo made with C standard libs. 
+	MLP demo made with C standard libs. 
 OPTIONS
 	-V	Verbose mode, prints values of vars every iteration. 
 	-t	Thread mode, enable muti-thread. Might increase calculation speed if batch_size is large. 

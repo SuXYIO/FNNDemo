@@ -4,12 +4,51 @@
 #include <stdbool.h>
 
 //get weights & biases
-extern double f_w;
-extern double f_b;
-extern double g_w;
-extern double g_b;
+extern W w;
+extern B b;
+extern V v;
 //get extern options
 extern int a_func_num;
+
+//init w & b & v
+//w, b = rand_nml(0.0, 1.0); v = 0.0;
+int init_wbv(void)
+{
+	for (int i = 0; i < LEN_I; i++) {
+		for (int j = 0; j < LEN_H0; j++)
+			w.ih0[i][j] = rand_nml(0.0, 1.0);
+		v.i[i] = 0.0;
+	}
+	for (int i = 0; i < LEN_H0; i++) {
+		for (int j = 0; j < LEN_O; j++)
+			w.h0o[i][j] = rand_nml(0.0, 1.0);
+		b.h0[i] = rand_nml(0.0, 1.0);
+		v.h0[i] = 0.0;
+	}
+	for (int i = 0; i < LEN_O; i++) {
+		b.o[i] = rand_nml(0.0, 1.0);
+		v.o[i] = 0.0;
+	}
+	return 0;
+}
+
+//forward propagation
+int fdp(void)
+{
+	double tmp_wsum = 0.0;
+	//i -> h
+	for (int i = 0; i < LEN_H0; i++) {
+		for (int j = 0; j < LEN_I; j++) {
+			tmp_wsum += w.ih0[j][i] * v.i[j];
+		}
+	}
+	//h -> o
+	for (int i = 0; i < LEN_O; i++) {
+		for (int j = 0; j < LEN_H0; j++) {
+		}
+	}
+	return 0;
+}
 
 //calculate batch thread function
 void* calc_batch(void* args)

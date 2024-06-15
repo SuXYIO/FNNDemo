@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 '''
-LinearRegressionPlot
-Simple example of using the output CSV file of LR to plot.
+Plot
+Simple example of using the output CSV file to plot.
 
 Usage
     python3 plot.py [filepath]
     or
     ./plot.py [filepath]
-        "filepath" is the path to the CSV formatted file LR generated. 
+        "filepath" is the path to the CSV formatted file. 
         If "filepath" empty, the program will search in the current dir for "*.csv". 
         It uses the only one if there is only one "*.csv" file. 
         It prompts the user which one to use if there is more than one or no "*.csv" file. 

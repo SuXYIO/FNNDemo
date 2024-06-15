@@ -4,18 +4,9 @@
 #include <time.h>
 
 //get weights & biases
-extern neuron nf;
-extern neuron ng;
-
-//Functions
-double f(double x)
-{
-	return nf.w * x + nf.b;
-}
-double g(double x)
-{
-	return ng.w * x + nf.b;
-}
+extern W w;
+extern B b;
+extern V v;
 
 //Loss function
 //MSE & MSE gradient
