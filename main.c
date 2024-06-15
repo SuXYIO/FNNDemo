@@ -11,6 +11,13 @@
 W w;
 B b;
 V v;
+//network gradients
+W wg;
+B bg;
+//expected network
+W ew;
+B eb;
+V ev;
 //extern options
 int a_func_num = 0;
 
@@ -119,6 +126,11 @@ int main(int const argc, char* const argv[])
 		}
 		//TODO: change whole write to file system. 
 		fprintf(csvfilep, "f_w,f_b,g_w,g_b,l,grad_w,grad_b\n");
+	}
+	//get functions
+	if (getfuncs() == -1) {
+		printf("%sERROR: error activation or loss function. \n%s", COLOR_ERROR, COLOR_END);
+		return -1;
 	}
 	//count iteration
 	int iter = 0;
