@@ -16,13 +16,9 @@ extern V ev;
 //MSE & MSE gradient
 //MSE(y, y_pred) = (1/n) * ∑(y - y_pred)^2
 //e: expected; a: actual; 
-double MSE(double e[], double a[], int n)
+double MSE(double e, double a)
 {
-	double l = 0.0;
-	for (int i = 0; i < LEN_O; i++)
-		l += pow(e[i] - a[i], 2);
-	l /= n;
-	return l;
+	return pow(e - a, 2);
 }
 double MSE_grad(double e, double a)
 {
@@ -128,4 +124,8 @@ double rand_nml(double mean, double stddev)
 	double r;
 	r = box_muller();
 	return r * stddev + mean;
+}
+double rand_nmlstd(void)
+{
+	return rand_nml(0.0, 1.0);
 }

@@ -20,6 +20,7 @@
 	//Float Precision for Print: how many digits to print after float decimal point
 		#define FPP 4
 	//ANSI color
+		#define COLOR_NORM "\033[0m"
 		#define COLOR_SUCC "\033[32m"
 		#define COLOR_WARN "\033[33m"
 		#define COLOR_ERROR "\033[31m"
@@ -39,12 +40,14 @@
 			double i[LEN_I];
 			double h0[LEN_H0];
 			double o[LEN_O];
+			double l[LEN_O];
+			double lall;
 		} V;
 //functions
 	//neuron.c
 		double f(double x);
 		double g(double x);
-		double MSE(double e[], double a[], int n);
+		double MSE(double e, double a);
 		double MSE_grad(double e, double a);
 		double None(double x);
 		double grad(double x);
@@ -58,9 +61,16 @@
 		double Tanh_grad(double x);
 		int strand(void);
 		double rand_nml(double mean, double stddev);
+		double rand_nmlstd(void);
 	//func.c
 		void* calc_batch(void* args);
 		int init_wbv(void);
+		int init_v(void);
+		int tfdp(void);
+		int fdp(void);
+		int bdp(void);
+		int avg_batch(void);
+		int gd(void);
 		int getfuncs(void);
 		int isusablefile(char* filename);
 		int printversion(void);

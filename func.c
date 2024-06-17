@@ -14,25 +14,33 @@ extern V ev;
 //get extern options
 extern int a_func_num;
 extern int l_func_num;
+extern double eta;
+extern int batch_size;
 
 //linear transformation (wx+b) output
+//(Alse called weighted sum)
 V u;
 
 //declare getfunc functions
 double (*get_a_func(int funcnum))(double);
-double (*get_l_func(int funcnum))(double*, double*, int);
+double (*get_l_func(int funcnum))(double, double);
 double (*get_agrad_func(int funcnum))(double);
 double (*get_lgrad_func(int funcnum))(double, double);
 
 //function pointers
 double (*a_func)(double) = NULL;
-double (*l_func)(double*, double*, int) = NULL;
+double (*l_func)(double, double) = NULL;
 double (*agrad_func)(double) = NULL;
 double (*lgrad_func)(double, double) = NULL;
+double (*randfunc)(void) = rand_nmlstd;
 
 //calculate batch thread function
 void* calc_batch(void* args)
 {
+	init_v();
+	tfdp();
+	fdp();
+	bdp();
 	return NULL;
 }
 
@@ -40,51 +48,89 @@ void* calc_batch(void* args)
 //w, b = rand_nml(0.0, 1.0); v = 0.0;
 int init_wbv(void)
 {
+	//TODO: Init b
 	//network
 	for (int i = 0; i < LEN_I; i++) {
 		for (int j = 0; j < LEN_H0; j++) {
-			w.ih0[i][j] = rand_nml(0.0, 1.0);
-			wg.ih0[i][j] = rand_nml(0.0, 1.0);
+			w.ih0[i][j] = randfunc();
+			wg.ih0[i][j] = randfunc();
 		}
 		v.i[i] = 0.0;
 		u.i[i] = 0.0;
 	}
 	for (int i = 0; i < LEN_H0; i++) {
 		for (int j = 0; j < LEN_O; j++) {
-			w.h0o[i][j] = rand_nml(0.0, 1.0);
-			wg.h0o[i][j] = rand_nml(0.0, 1.0);
+			w.h0o[i][j] = randfunc();
+			wg.h0o[i][j] = randfunc();
 		}
-		b.h0[i] = rand_nml(0.0, 1.0);
+		b.h0[i] = randfunc();
 		v.h0[i] = 0.0;
 		u.h0[i] = 0.0;
 	}
 	for (int i = 0; i < LEN_O; i++) {
-		b.o[i] = rand_nml(0.0, 1.0);
+		b.o[i] = randfunc();
 		v.o[i] = 0.0;
 		u.o[i] = 0.0;
 	}
 	//expected network
 	for (int i = 0; i < LEN_I; i++) {
 		for (int j = 0; j < LEN_H0; j++)
-			ew.ih0[i][j] = rand_nml(0.0, 1.0);
+			ew.ih0[i][j] = randfunc();
 		ev.i[i] = 0.0;
 	}
 	for (int i = 0; i < LEN_H0; i++) {
 		for (int j = 0; j < LEN_O; j++)
-			ew.h0o[i][j] = rand_nml(0.0, 1.0);
-		eb.h0[i] = rand_nml(0.0, 1.0);
+			ew.h0o[i][j] = randfunc();
+		eb.h0[i] = randfunc();
 		ev.h0[i] = 0.0;
 	}
 	for (int i = 0; i < LEN_O; i++) {
-		eb.o[i] = rand_nml(0.0, 1.0);
+		eb.o[i] = randfunc();
 		ev.o[i] = 0.0;
 	}
+	return 0;
+}
+//init values
+int init_v(void)
+{
+	for (int i = 0; i < LEN_I; i++)
+		v.i[i] = 0.0;
+	for (int i = 0; i < LEN_H0; i++)
+		v.h0[i] = 0.0;
+	for (int i = 0; i < LEN_O; i++) {
+		v.o[i] = 0.0;
+		v.l[i] = 0.0;
+	}
+	v.lall = 0.0;
+	return 0;
+}
+
+//training network forward propagation (get traning data)
+int tfdp(void)
+{
+	for (int i = 0; i < LEN_I; i++)
+		ev.i[i] = randfunc();
+	//i -> h0
+	for (int i = 0; i < LEN_H0; i++)
+		for (int j = 0; j < LEN_I; j++) {
+			u.h0[i] += ew.ih0[j][i] * ev.i[j] + eb.h0[i];
+			ev.h0[i] += a_func(u.h0[i]);
+		}
+	//h0 -> o
+	for (int i = 0; i < LEN_O; i++)
+		for (int j = 0; j < LEN_H0; j++) {
+			u.o[i] += ew.h0o[j][i] * ev.h0[j] + eb.o[i];
+			ev.o[i] += a_func(u.o[i]);
+		}
 	return 0;
 }
 
 //forward propagation
 int fdp(void)
 {
+	//ev.i >> v.i
+	for (int i = 0; i < LEN_O; i++)
+		v.i[i] = ev.i[i];
 	//i >> u.i
 	for (int i = 0; i < LEN_I; i++)
 		u.i[i] = v.i[i];
@@ -97,24 +143,72 @@ int fdp(void)
 	//h0 -> o
 	for (int i = 0; i < LEN_O; i++)
 		for (int j = 0; j < LEN_H0; j++) {
-			u.o[i] = w.h0o[j][i] * v.h0[j] + b.o[i];
+			u.o[i] += w.h0o[j][i] * v.h0[j] + b.o[i];
 			v.o[i] += a_func(u.o[i]);
 		}
 	return 0;
 }
+//backward propagation
 /*
 	For backpropagating layer x <- layer y, 
-		dE/dwij = dE/yj * dyj/dwij
-	For MSE, 
-		dR/dwij = -2(ej-aj)
+		h0<-o (2):
+			dE/dw2jk = dE/dyk * dyk/du2k * du2k/dw2jk
+		i<-h0 (1):
+			dE/dw1ij = sigma(k=1, q) [dE/dyk * dyk/du2k * du2k/dw1ij]
+			du2k/dw1ij = du2k/dzj * dzj/dw1ij
+			dzj/dw1ij = dzj/du1j * du1j/dw1ij
 */
 int bdp(void)
 {
-	//o <- h0
+	//TODO: Write for b
+	//loss
 	for (int i = 0; i < LEN_O; i++)
-		for (int j = 0; j < LEN_H0; j++) {
-			wg.h0o[j][i] = lgrad_func(ev.o[i], v.o[i]) * agrad_func(u.o[i]);
-		}
+		v.l[i] += l_func(ev.o[i], v.o[i]);
+	//gradients
+	//h0 <- o
+	for (int i = 0; i < LEN_O; i++)
+		for (int j = 0; j < LEN_H0; j++)
+			wg.h0o[j][i] += -lgrad_func(ev.o[i], v.o[i]) * agrad_func(v.o[i]) * v.h0[j];
+	//i <- h0
+	for (int i = 0; i < LEN_H0; i++)
+		for (int j = 0; j < LEN_I; j++)
+			for (int k = 0; k < LEN_O; k++)
+				wg.ih0[j][i] += -lgrad_func(ev.o[k], v.o[k]) * agrad_func(v.o[k]) * w.h0o[i][k] * agrad_func(v.h0[i]) * v.i[j];
+	return 0;
+}
+//average batch
+int avg_batch(void)
+{
+	//loss
+	for (int i = 0; i < LEN_O; i++) {
+		v.l[i] /= batch_size;
+		v.lall += v.l[i];
+	}
+	v.lall /= LEN_O;
+	//gradients
+	//h0 <- o
+	for (int i = 0; i < LEN_O; i++)
+		for (int j = 0; j < LEN_H0; j++)
+			wg.h0o[j][i] /= batch_size;
+	//i <- h0
+	for (int i = 0; i < LEN_H0; i++)
+		for (int j = 0; j < LEN_I; j++)
+			wg.ih0[j][i] /= batch_size;
+	return 0;
+}
+//gradient descent
+int gd(void)
+{
+	//TODO: Write for b
+	//w
+	//ih0
+	for (int i = 0; i < LEN_H0; i++)
+		for (int j = 0; j < LEN_I; j++)
+			w.ih0[j][i] -= eta * wg.ih0[j][i];
+	//h0o
+	for (int i = 0; i < LEN_O; i++)
+		for (int j = 0; j < LEN_H0; j++)
+			w.h0o[j][i] -= eta * wg.h0o[j][i];
 	return 0;
 }
 
@@ -154,9 +248,9 @@ double (*get_a_func(int funcnum))(double)
 		func = NULL;
 	return func;
 }
-double (*get_l_func(int funcnum))(double*, double*, int)
+double (*get_l_func(int funcnum))(double, double)
 {
-	double (*func)(double*, double*, int);
+	double (*func)(double, double);
 	if (funcnum == 0)
 		func = MSE;
 	else

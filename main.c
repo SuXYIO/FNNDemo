@@ -20,20 +20,17 @@ B eb;
 V ev;
 //extern options
 int a_func_num = 0;
+int l_func_num = 0;
+double eta = 0.001;
+int batch_size = 1;
 
-//TODO: integrate the whole system with mutilayer
 int main(int const argc, char* const argv[])
 {
 	//init
 	int seed = 0;
 	//seed rand
 	seed = strand();
-	double l = 0.0;
-	double grad_w = 0.0;
-	double grad_b = 0.0;
-	double eta = 0.001;
 	double l_exp = 0.0001;
-	int batch_size = 256;
 	int thread_size = 0;
 	//check command args
 	//store opts
@@ -121,11 +118,11 @@ int main(int const argc, char* const argv[])
 	if (writetofile == true) {
 		csvfilep = fopen(csvfilename, "w");
 		if (csvfilep == NULL) {
-			printf("%sERROR: error opening file. \n%sFile: %s, from option '-f'\n%s", COLOR_ERROR, COLOR_END, csvfilename, COLOR_END);
+			printf("%sERROR: error opening file. \n%s", COLOR_ERROR, COLOR_END);
 			return -1;
 		}
 		//TODO: change whole write to file system. 
-		fprintf(csvfilep, "f_w,f_b,g_w,g_b,l,grad_w,grad_b\n");
+		fprintf(csvfilep, "\n");
 	}
 	//get functions
 	if (getfuncs() == -1) {
@@ -140,51 +137,46 @@ int main(int const argc, char* const argv[])
 			//use muti-thread to calculate batch
 			pthread_t tid[thread_size];
 			void* ret = NULL;
-			void* args[3] = {&l, &grad_w, &grad_b};
 			for (int i = 0; i < thread_size; i++)
-				pthread_create(&tid[i], NULL, calc_batch, args);
+				pthread_create(&tid[i], NULL, calc_batch, NULL);
 			for (int i = 0; i < thread_size; i++) {
 				pthread_join(tid[i], &ret);
 				if (ret != NULL) {
-					printf("%sERROR: undefined activation function number. %sFrom option '-A', a_func_num = %d. \n%s", COLOR_ERROR, COLOR_END, a_func_num, COLOR_END);
+					printf("%sERROR: undefined activation function number. \n%s", COLOR_ERROR, COLOR_END);
 					return -1;
 				}
 			}
 		} else if (use_thread == false) {
 			//normal calculate batch
-			void* args[3] = {&l, &grad_w, &grad_b};
 			void* ret;
 			for (int i = 0; i < batch_size; i++) {
-				ret = calc_batch(args);
+				ret = calc_batch(NULL);
 				if (ret != NULL) {
-					printf("%sERROR: undefined activation function number. %sFrom option '-A', a_func_num = %d. \n%s", COLOR_ERROR, COLOR_END, a_func_num, COLOR_END);
+					printf("%sERROR: undefined activation function number. \n%s", COLOR_ERROR, COLOR_END);
 					return -1;
 				}
 			}
 		}
-		//calc loss & gradients (average of batch)
-		l /= batch_size;
-		grad_w /= batch_size;
-		grad_b /= batch_size;
+		//calc average gradient
+		avg_batch();
 		//update weights & biases
-		nf.w -= eta * grad_w;
-		nf.b -= eta * grad_b;
+		gd();
 		//print results
 		//TODO: change whole write to file system. 
 		if (writetofile == true)
-			fprintf(csvfilep, "%.*f,%.*f,%.*f,%.*f,%.*f,%.*f,%.*f\n", FPP, nf.w, FPP, nf.b, FPP, ng.w, FPP, ng.b, FPP, l, FPP, grad_w, FPP, grad_b);
+			fprintf(csvfilep, "\n");
 		if (verbose == true)
-			printf("%siter = %d, nf.w = %.*f, nf.b = %.*f, ng.w = %.*f, ng.b = %.*f, l = %.*f, grad_w = %.*f, grad_b = %.*f; \n%s", COLOR_END, iter, FPP, nf.w, FPP, nf.b, FPP, ng.w, FPP, ng.b, FPP, l, FPP, grad_w, FPP, grad_b, COLOR_END);
+			printf("%siter = %d, lall = %.*f; \n%s", COLOR_NORM, iter, FPP, v.lall, COLOR_END);
 		//check if gradient explosion
-		if (isfinite(l) != true || isfinite(grad_w) != true || isfinite(grad_b) != true) {
-			printf("%sERROR: l or grad_w or grad_b not finite, probably gradient explosion. \n%siter = %d, \nnf.w = %.*f, nf.b = %.*f, \nng.w = %.*f, ng.b = %.*f, \neta = %.*f, batch_size = %d, \nl = %.*f, l_exp = %.*f\n%s", COLOR_ERROR, COLOR_END, iter, FPP, nf.w, FPP, nf.b, FPP, ng.w, FPP, ng.b, FPP, eta, batch_size, FPP, l, FPP, l_exp, COLOR_END);
+		if (isfinite(v.lall) != true) {
+			printf("%sERROR: loss not finite, probably gradient explosion. \n%sseed = %d, \niter = %d, \neta = %.*f, batch_size = %d, \nl = %.*f, l_exp = %.*f\n%s", COLOR_ERROR, COLOR_NORM, seed, iter, FPP, eta, batch_size, FPP, v.lall, FPP, l_exp, COLOR_END);
 			if (writetofile == true)
 				fclose(csvfilep);
 			return -1;
 		}
 		iter++;
-	} while (l >= l_exp);
-	printf("%sSUCC: l >= l_exp. \n%sseed = %d, \niter = %d, \nnf.w_init = %.*f, nf.b_init = %.*f, \nnf.w = %.*f, nf.b = %.*f, \nng.w = %.*f, ng.b = %.*f, \neta = %.*f, batch_size = %d, \nl = %.*f, l_exp = %.*f\n%s", COLOR_SUCC, COLOR_END, seed, iter, FPP, nf_w_init, FPP, nf_b_init, FPP, nf.w, FPP, nf.b, FPP, ng.w, FPP, ng.b, FPP, eta, batch_size, FPP, l, FPP, l_exp, COLOR_END);
+	} while (v.lall >= l_exp);
+	printf("%sSUCC: l >= l_exp. \n%sseed = %d, \niter = %d, \neta = %.*f, batch_size = %d, \nlall = %.*f, l_exp = %.*f\n%s", COLOR_SUCC, COLOR_NORM, seed, iter, FPP, eta, batch_size, FPP, v.lall, FPP, l_exp, COLOR_END);
 	if (writetofile == true)
 		fclose(csvfilep);
 	return 0;
