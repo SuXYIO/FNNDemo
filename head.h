@@ -65,11 +65,12 @@
 	//func.c
 		void* calc_batch(void* args);
 		int init_wbv(void);
-		int init_v(void);
+		int init_vl(void);
 		int tfdp(void);
 		int fdp(void);
 		int bdp(void);
-		int avg_batch(void);
+		int avg_wbvl(void);
+		int avg_grad(void);
 		int gd(void);
 		int getfuncs(void);
 		int isusablefile(char* filename);

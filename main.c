@@ -22,7 +22,7 @@ V ev;
 int a_func_num = 0;
 int l_func_num = 0;
 double eta = 0.001;
-int batch_size = 1;
+int batch_size = 256;
 
 int main(int const argc, char* const argv[])
 {
@@ -158,7 +158,9 @@ int main(int const argc, char* const argv[])
 			}
 		}
 		//calc average gradient
-		avg_batch();
+		avg_wbvl();
+		//backward propagation
+		bdp();
 		//update weights & biases
 		gd();
 		//print results

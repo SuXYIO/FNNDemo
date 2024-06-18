@@ -37,14 +37,13 @@ double (*randfunc)(void) = rand_nmlstd;
 //calculate batch thread function
 void* calc_batch(void* args)
 {
-	init_v();
+	init_vl();
 	tfdp();
 	fdp();
-	bdp();
 	return NULL;
 }
 
-//init w & b & v
+//init w & b & v & l
 //w, b = rand_nml(0.0, 1.0); v = 0.0;
 int init_wbv(void)
 {
@@ -91,7 +90,7 @@ int init_wbv(void)
 	return 0;
 }
 //init values
-int init_v(void)
+int init_vl(void)
 {
 	for (int i = 0; i < LEN_I; i++)
 		v.i[i] = 0.0;
@@ -177,14 +176,33 @@ int bdp(void)
 	return 0;
 }
 //average batch
-int avg_batch(void)
+int avg_wbvl(void)
 {
+	//network
+	for (int i = 0; i < LEN_I; i++)
+		for (int j = 0; j < LEN_H0; j++) {
+			w.ih0[i][j] /= batch_size;
+			wg.ih0[i][j] /= batch_size;
+		}
+	for (int i = 0; i < LEN_H0; i++) {
+		for (int j = 0; j < LEN_O; j++) {
+			w.h0o[i][j] /= batch_size;
+			wg.h0o[i][j] /= batch_size;
+		}
+		b.h0[i] /= batch_size;
+	}
+	for (int i = 0; i < LEN_O; i++)
+		b.o[i] /= batch_size;
 	//loss
 	for (int i = 0; i < LEN_O; i++) {
 		v.l[i] /= batch_size;
 		v.lall += v.l[i];
 	}
 	v.lall /= LEN_O;
+	return 0;
+}
+int avg_grad(void)
+{
 	//gradients
 	//h0 <- o
 	for (int i = 0; i < LEN_O; i++)
