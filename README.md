@@ -1,20 +1,20 @@
-# LR
+# FNNDemo
 ## Note
 **The versions with this note is not completed yet, still in development.**  
-Adopted from SuXYIO/LR.  
+Adopted from SuXYIO/LRDemo.  
 
 ## Intro
-Simple demo to MLP using C.  
+Simple demo to FNN using C.  
 
 ## Install
 ### Linux/Unix:
 Clone:
 ```bash
-git clone https://github.com/SuXYIO/MLPDemo
+git clone https://github.com/SuXYIO/FNNDemo
 ```
 Compile:
 ```
-cd MLPDemo
+cd FNNDemo
 make
 ```
 ### Windows:
@@ -24,12 +24,12 @@ Might work if using methods like MinGW to use POSIX standards on Windows.
 
 ## Usage
 ```bash
-./MLP.out [options]
+./FNN.out [options]
 ```
 ### Args
 See manual:
 ```bash
-./MLP.out -h
+./FNN.out -h
 ```
 ### Other
 None, yet.  
@@ -41,5 +41,5 @@ Regression algorithm: `Gradient decent`
 Random algorithm: `Box-muller normal distro`  
 
 ## Purpose
-A project to help improve C programming skills & experiment with and understand MLPs better.  
+A project to help improve C programming skills & experiment with and understand neural networks better.  
 

@@ -1,10 +1,10 @@
 NAME
-	MLPDemo (Muti-Layer Perceptron Demo)
+	FNNDemo (Feedforward Neural Network Demo)
 	Version 1.0.0
 SYNOPSIS
-	./MLP.out [args]
+	./FNN.out [args]
 DESCRIPTION
-	MLP demo made with C standard libs. 
+	FNN demo made with C. 
 OPTIONS
 	-V	Verbose mode, prints values of vars every iteration. 
 	-t	Thread mode, enable muti-thread. Might increase calculation speed if batch_size is large. 

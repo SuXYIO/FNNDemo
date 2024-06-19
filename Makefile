@@ -2,8 +2,8 @@ CC = gcc
 CFLAGS = -Wall
 CDBFLAGS = -g
 
-TARG = MLP.out
-DBTARG = MLP.db.out
+TARG = FNN.out
+DBTARG = FNN.db.out
 TARGS = $(shell find . -name '*.out')
 
 DEP = $(shell find . -name '*.h')

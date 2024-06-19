@@ -1,4 +1,4 @@
-// MLPDemo (Muti-Layer Perceptron Demo)
+// FNNDemo (Feedforward Neural Network Demo)
 // By SuXYIO
 // Created on 2024.04.15
 
