@@ -69,8 +69,8 @@
 		int tfdp(void);
 		int fdp(void);
 		int bdp(void);
-		int avg_wbvl(void);
-		int avg_grad(void);
+		int avg_wbv(void);
+		int avg_gl(void);
 		int gd(void);
 		int getfuncs(void);
 		int isusablefile(char* filename);

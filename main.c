@@ -134,13 +134,29 @@ int main(int const argc, char* const argv[])
 	do {
 		//calc batch
 		if (use_thread == true) {
+			//times of threads to run
+			double tt = (float)batch_size / (float)thread_size;
+			//executed thread number
+			int exedt = 0;
 			//use muti-thread to calculate batch
 			pthread_t tid[thread_size];
 			void* ret = NULL;
-			for (int i = 0; i < thread_size; i++)
+			for (int i = 0; i < tt; i++)
 				pthread_create(&tid[i], NULL, calc_batch, NULL);
-			for (int i = 0; i < thread_size; i++) {
+			for (int i = 0; i < tt; i++) {
 				pthread_join(tid[i], &ret);
+				if (ret != NULL) {
+					printf("%sERROR: undefined activation function number. \n%s", COLOR_ERROR, COLOR_END);
+					return -1;
+				}
+			}
+			if (batch_size > exedt) {
+				//remaining threads to be executed
+				int rmnt = batch_size - exedt;
+				for (int i = 0; i < rmnt; i++)
+					pthread_create(&tid[i], NULL, calc_batch, NULL);
+				for (int i = 0; i < rmnt; i++)
+					pthread_join(tid[i], &ret);
 				if (ret != NULL) {
 					printf("%sERROR: undefined activation function number. \n%s", COLOR_ERROR, COLOR_END);
 					return -1;
@@ -157,10 +173,11 @@ int main(int const argc, char* const argv[])
 				}
 			}
 		}
-		//calc average gradient
-		avg_wbvl();
+		//calc average
+		avg_wbv();
 		//backward propagation
 		bdp();
+		avg_gl();
 		//update weights & biases
 		gd();
 		//print results

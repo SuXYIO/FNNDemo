@@ -89,7 +89,7 @@ int init_wbv(void)
 	}
 	return 0;
 }
-//init values
+//init values and losses
 int init_vl(void)
 {
 	for (int i = 0; i < LEN_I; i++)
@@ -110,17 +110,23 @@ int tfdp(void)
 	for (int i = 0; i < LEN_I; i++)
 		ev.i[i] = randfunc();
 	//i -> h0
-	for (int i = 0; i < LEN_H0; i++)
+	for (int i = 0; i < LEN_H0; i++) {
 		for (int j = 0; j < LEN_I; j++) {
 			u.h0[i] += ew.ih0[j][i] * ev.i[j] + eb.h0[i];
 			ev.h0[i] += a_func(u.h0[i]);
 		}
+		u.h0[i] /= LEN_I;
+		ev.h0[i] /= LEN_I;
+	}
 	//h0 -> o
-	for (int i = 0; i < LEN_O; i++)
+	for (int i = 0; i < LEN_O; i++) {
 		for (int j = 0; j < LEN_H0; j++) {
 			u.o[i] += ew.h0o[j][i] * ev.h0[j] + eb.o[i];
 			ev.o[i] += a_func(u.o[i]);
 		}
+		u.o[i] /= LEN_H0;
+		ev.o[i] /= LEN_H0;
+	}
 	return 0;
 }
 
@@ -134,17 +140,23 @@ int fdp(void)
 	for (int i = 0; i < LEN_I; i++)
 		u.i[i] = v.i[i];
 	//i -> h0
-	for (int i = 0; i < LEN_H0; i++)
+	for (int i = 0; i < LEN_H0; i++) {
 		for (int j = 0; j < LEN_I; j++) {
 			u.h0[i] += w.ih0[j][i] * v.i[j] + b.h0[i];
 			v.h0[i] += a_func(u.h0[i]);
 		}
+		u.h0[i] /= LEN_I;
+		v.h0[i] /= LEN_I;
+	}
 	//h0 -> o
-	for (int i = 0; i < LEN_O; i++)
+	for (int i = 0; i < LEN_O; i++) {
 		for (int j = 0; j < LEN_H0; j++) {
 			u.o[i] += w.h0o[j][i] * v.h0[j] + b.o[i];
 			v.o[i] += a_func(u.o[i]);
 		}
+		u.o[i] /= LEN_H0;
+		v.o[i] /= LEN_H0;
+	}
 	return 0;
 }
 //backward propagation
@@ -167,16 +179,16 @@ int bdp(void)
 	//h0 <- o
 	for (int i = 0; i < LEN_O; i++)
 		for (int j = 0; j < LEN_H0; j++)
-			wg.h0o[j][i] += -lgrad_func(ev.o[i], v.o[i]) * agrad_func(v.o[i]) * v.h0[j];
+			wg.h0o[j][i] += lgrad_func(ev.o[i], v.o[i]) * agrad_func(v.o[i]) * v.h0[j];
 	//i <- h0
 	for (int i = 0; i < LEN_H0; i++)
 		for (int j = 0; j < LEN_I; j++)
 			for (int k = 0; k < LEN_O; k++)
-				wg.ih0[j][i] += -lgrad_func(ev.o[k], v.o[k]) * agrad_func(v.o[k]) * w.h0o[i][k] * agrad_func(v.h0[i]) * v.i[j];
+				wg.ih0[j][i] += lgrad_func(ev.o[k], v.o[k]) * agrad_func(v.o[k]) * w.h0o[i][k] * agrad_func(v.h0[i]) * v.i[j];
 	return 0;
 }
 //average batch
-int avg_wbvl(void)
+int avg_wbv(void)
 {
 	//network
 	for (int i = 0; i < LEN_I; i++)
@@ -193,25 +205,23 @@ int avg_wbvl(void)
 	}
 	for (int i = 0; i < LEN_O; i++)
 		b.o[i] /= batch_size;
+	return 0;
+}
+int avg_gl(void)
+{
+	//gradients
+	for (int i = 0; i < LEN_O; i++)
+		for (int j = 0; j < LEN_H0; j++)
+			wg.h0o[j][i] /= batch_size;
+	for (int i = 0; i < LEN_H0; i++)
+		for (int j = 0; j < LEN_I; j++)
+			wg.ih0[j][i] /= batch_size;
 	//loss
 	for (int i = 0; i < LEN_O; i++) {
 		v.l[i] /= batch_size;
 		v.lall += v.l[i];
 	}
 	v.lall /= LEN_O;
-	return 0;
-}
-int avg_grad(void)
-{
-	//gradients
-	//h0 <- o
-	for (int i = 0; i < LEN_O; i++)
-		for (int j = 0; j < LEN_H0; j++)
-			wg.h0o[j][i] /= batch_size;
-	//i <- h0
-	for (int i = 0; i < LEN_H0; i++)
-		for (int j = 0; j < LEN_I; j++)
-			wg.ih0[j][i] /= batch_size;
 	return 0;
 }
 //gradient descent
